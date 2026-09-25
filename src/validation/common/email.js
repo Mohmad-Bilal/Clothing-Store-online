@@ -1,3 +1,5 @@
+const Joi = require("joi");
+
 const email = Joi.string().trim().email().lowercase().messages({
   "string.base": "Last name must be a string",
   "string.empty": "Last name is required",
