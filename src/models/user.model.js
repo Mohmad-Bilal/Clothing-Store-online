@@ -14,62 +14,63 @@ const addressSchema = new mongoose.Schema({
   },
 });
 
-const userSchema = new mongoose.Schema({
-  firstName: {
-    type: String,
-    required: [true, "First name is required"],
-    trim: true,
-    minlength: [2, "First name must be at least 2 characters"],
-    maxlength: [50, "First name must be at most 50 characters"],
-  },
-  lastName: {
-    type: String,
-    required: [true, "Last name is required"],
-    trim: true,
-    minlength: [2, "Last name must be at least 2 characters"],
-    maxlength: [50, "Last name must be at most 50 characters"],
-  },
-  email: {
-    type: String,
-    required: [true, "Email is required"],
-    lowercase: true,
-    unique: true,
-    trim: true,
-    index: true,
-  },
-  password: {
-    type: String,
-    required: [true, "Password is required"],
-    select: false,
-  },
-  phone: {
-    type: String,
-  },
-  addresses: [addressSchema],
-  avatar: {
-    fileId: {
+const userSchema = new mongoose.Schema(
+  {
+    firstName: {
+      type: String,
+      required: [true, "First name is required"],
+      trim: true,
+      minlength: [2, "First name must be at least 2 characters"],
+      maxlength: [50, "First name must be at most 50 characters"],
+    },
+    lastName: {
+      type: String,
+      required: [true, "Last name is required"],
+      trim: true,
+      minlength: [2, "Last name must be at least 2 characters"],
+      maxlength: [50, "Last name must be at most 50 characters"],
+    },
+    email: {
+      type: String,
+      required: [true, "Email is required"],
+      lowercase: true,
+      unique: true,
+      trim: true,
+      index: true,
+    },
+    password: {
+      type: String,
+      required: [true, "Password is required"],
+      select: false,
+    },
+    phone: {
       type: String,
     },
-    url: {
-      type: String,
+    addresses: [addressSchema],
+    avatar: {
+      fileId: {
+        type: String,
+      },
+      url: {
+        type: String,
+      },
     },
-  },
 
-  role: {
-    type: String,
-    enum: ["customer", "admin"],
-    default: "customer",
+    role: {
+      type: String,
+      enum: ["customer", "admin"],
+      default: "customer",
+    },
+    isVerified: {
+      type: Boolean,
+      default: false,
+    },
+    refreshToken: {
+      type: String,
+    },
   },
-  isVerified: {
-    type: Boolean,
-    default: false,
-  },
-  refreshToken: {
-    type: String,
-  },
-  timestamps: true,
-  versionKey: false,
-});
+  { timestamps: true, versionKey: false },
+);
 
 userSchema.virtual("fullName").get(function () {
   return `${this.firstName} ${this.lastName}`;

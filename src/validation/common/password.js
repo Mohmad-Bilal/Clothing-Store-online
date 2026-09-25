@@ -1,3 +1,4 @@
+const Joi = require("joi");
 const password = Joi.string()
   .min(6)
   .max(50)

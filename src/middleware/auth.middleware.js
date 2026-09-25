@@ -1,43 +1,51 @@
-// const jwt = require("jsonwebtoken");
-// const config = require("../config/env");
-// const User = require("../models/user.model");
-// const ApiError = require("../utils/ApiError");
-// const asyncHandler = require("express-async-handler");
-// const ApiResponse = require("../utils/ApiResponse");
+const jwt = require("jsonwebtoken");
+const config = require("../config/env");
+const User = require("../models/user.model");
+const ApiError = require("../utils/ApiError");
+const asyncHandler = require("express-async-handler");
 
-// const protect = asyncHandler(async (req, res, next) => {
-//   const authHeader = req.headers.authorization;
-//   let token;
+const protect = asyncHandler(async (req, res, next) => {
+  const authHeader = req.headers.authorization;
 
-//   if (req.cookies?.token) {
-//     token = req.cookies.token;
-//   }
-//   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-//     throw new ApiError(401, "Not authorized, no token");
-//   }
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    throw new ApiError(401, "Unauthorized");
+  }
+  let token = authHeader.split(" ")[1];
+  try {
+    const decoded = jwt.verify(token, config.jwtSecret);
+    if (!decoded || !decoded.userId) {
+      throw new ApiError(401, "The user not found");
+    }
 
-//   if (!token && authHeader && authHeader.startsWith("Bearer ")) {
-//     token = authHeader.split(" ")[1];
-//   }
-//   if (!token) {
-//     throw new ApiError(401, "Not authorized, no token");
-//   }
-//   let decoded;
-//   try {
-//     decoded = jwt.verify(token, config.jwtSecret);
-//   } catch (err) {
-//     throw new ApiError(401, "Not authorized, token failed");
-//   }
-//   const user = await User.findById(decoded.id);
+    const user = await User.findById(decoded.userId);
 
-//   if (!user) {
-//     throw new ApiError(401, "Not authorized, user not found");
-//   }
+    if (!user) {
+      throw new ApiError(401, "User not found");
+    }
 
-//   req.user = user;
-//   next();
-// });
+    req.user = user;
 
-// const allowTo = (...roles) => {};
+    next();
+  } catch (err) {
+    if (err instanceof ApiError) {
+      throw err;
+    }
 
-// module.exports = { protect, allowTo };
+    if (err.name === "TokenExpiredError") {
+      throw new ApiError(401, "Token expired");
+    }
+
+    throw new ApiError(401, "Invalid Token");
+  }
+});
+
+const allowTo = (...roles) => {
+  return (req, res, next) => {
+    if (!roles.includes(req.user.role)) {
+      throw new ApiError(403, "You are not allowed to access this route");
+    }
+    next();
+  };
+};
+
+module.exports = { protect, allowTo };
