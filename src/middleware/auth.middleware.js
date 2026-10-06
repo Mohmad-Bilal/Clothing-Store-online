@@ -10,7 +10,7 @@ const protect = asyncHandler(async (req, res, next) => {
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
     throw new ApiError(401, "Unauthorized");
   }
-  let token = authHeader.split(" ")[1];
+  const token = authHeader.split(" ")[1];
   try {
     const decoded = jwt.verify(token, config.jwtSecret);
     if (!decoded || !decoded.userId) {
